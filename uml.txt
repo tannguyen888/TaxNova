@@ -1,0 +1,176 @@
+🧱 2️⃣ UML – Package Diagram
++-------------------+
+|       app         |
++-------------------+
+| MainApp           |
+| AppConfig         |
++-------------------+
+
++-------------------+
+|      login        |
++-------------------+
+| LoginController   |
+| LoginViewModel    |
++-------------------+
+
++-------------------+
+|     dashboard     |
++-------------------+
+| DashboardController |
+| DashboardViewModel  |
++-------------------+
+
++-------------------+
+|      revenue      |
++-------------------+
+| RevenueController |
+| RevenueViewModel  |
+| RevenueService    |
+| Receipt           |
++-------------------+
+
++-------------------+
+|        tax        |
++-------------------+
+| TaxService        |
+| TaxCalculator     |
++-------------------+
+
++-------------------+
+|     reporting     |
++-------------------+
+| PdfExportService  |
+| ReportBuilder     |
++-------------------+
+
++-------------------+
+|        ai         |
++-------------------+
+| ChatService       |
+| ChatMessage       |
++-------------------+
+
++-------------------+
+|    persistence    |
++-------------------+
+| UserRepository    |
+| ReceiptRepository |
+| DatabaseManager   |
++-------------------+
+📦 3️⃣ UML – Class Diagram (Core System)
+🔐 Login Module
++-------------------+
+| LoginController   |
++-------------------+
+| - viewModel       |
+| + onLogin()       |
++-------------------+
+           |
+           v
++-------------------+
+| LoginViewModel    |
++-------------------+
+| - authService     |
+| - username        |
+| - password        |
+| + login()         |
++-------------------+
+           |
+           v
++-------------------+
+| AuthService       |
++-------------------+
+| - userRepository  |
+| + authenticate()  |
++-------------------+
+📊 Revenue Module
++---------------------+
+| RevenueController   |
++---------------------+
+| - viewModel         |
+| + addReceipt()      |
+| + deleteReceipt()   |
++---------------------+
+             |
+             v
++---------------------+
+| RevenueViewModel    |
++---------------------+
+| - revenueService    |
+| + getTotalRevenue() |
+| + getTotalTax()     |
++---------------------+
+             |
+             v
++---------------------+
+| RevenueService      |
++---------------------+
+| - receiptRepository |
+| - taxService        |
+| + calculateRevenue()|
++---------------------+
+             |
+             v
++---------------------+
+| ReceiptRepository   |
++---------------------+
+| + save()            |
+| + findAll()         |
++---------------------+
+🧾 Domain Model
++-------------------+
+| Receipt           |
++-------------------+
+| - id              |
+| - date            |
+| - amount          |
+| - taxAmount       |
+| - category        |
++-------------------+
+
++-------------------+
+| User              |
++-------------------+
+| - id              |
+| - username        |
+| - passwordHash    |
+| - role            |
++-------------------+
+
++-------------------+
+| ChatMessage       |
++-------------------+
+| - id              |
+| - content         |
+| - senderType      |
+| - timestamp       |
++-------------------+
+📄 Reporting Module
++----------------------+
+| PdfExportService     |
++----------------------+
+| + exportRevenue()    |
+| + exportTaxReport()  |
++----------------------+
+            ^
+            |
++----------------------+
+| ReportBuilder        |
++----------------------+
+| + buildSummary()     |
++----------------------+
+🤖 AI Module
++-------------------+
+| ChatController    |
++-------------------+
+| - chatService     |
+| + sendMessage()   |
++-------------------+
+           |
+           v
++-------------------+
+| ChatService       |
++-------------------+
+| + askAI()         |
+| + parseResponse() |
++-------------------+

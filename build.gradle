@@ -266,6 +266,9 @@ if (!devProps.exists()) {
 
 // Checks
 
-if (System.getProperty("java.home").contains(" ")) {
-    throw new IllegalArgumentException("Your JDK home path contains spaces. This will break several gradle plugins")
+def javaHome = System.getProperty("java.home")
+
+if (javaHome.contains(" ")) {
+    println("[WARNING] Your JDK home path contains spaces: $javaHome")
+    println("[WARNING] Some Gradle plugins may behave incorrectly")
 }

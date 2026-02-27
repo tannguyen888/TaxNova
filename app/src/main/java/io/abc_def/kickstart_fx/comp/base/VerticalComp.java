@@ -3,7 +3,6 @@ package io.abc_def.kickstart_fx.comp.base;
 import io.abc_def.kickstart_fx.comp.Comp;
 import io.abc_def.kickstart_fx.comp.CompStructure;
 import io.abc_def.kickstart_fx.comp.SimpleCompStructure;
-import io.abc_def.kickstart_fx.platform.PlatformThread;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;

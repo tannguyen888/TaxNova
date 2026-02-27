@@ -1,0 +1,230 @@
+Class: MainApp
+---------------------------------
+MainApp
+---------------------------------
+- injector: Injector
+---------------------------------
++ MainApp()
++ init(): void
++ start(stage: Stage): void
+---------------------------------
+🟦 Class: AppConfig
+---------------------------------
+AppConfig
+---------------------------------
+---------------------------------
++ AppConfig()
++ configure(): void
+---------------------------------
+🔐 2️⃣ PACKAGE: login
+🟦 Class: LoginController
+---------------------------------
+LoginController
+---------------------------------
+- viewModel: LoginViewModel
+---------------------------------
++ LoginController(viewModel: LoginViewModel)
++ onLogin(): void
++ initialize(): void
+---------------------------------
+🟦 Class: LoginViewModel
+---------------------------------
+LoginViewModel
+---------------------------------
+- authService: AuthService
+- username: String
+- password: String
+---------------------------------
++ LoginViewModel(authService: AuthService)
++ login(): boolean
+---------------------------------
+🟦 Class: AuthService
+---------------------------------
+AuthService
+---------------------------------
+- userRepository: UserRepository
+---------------------------------
++ AuthService(userRepository: UserRepository)
++ authenticate(username: String, password: String): boolean
+---------------------------------
+📊 3️⃣ PACKAGE: dashboard
+🟦 Class: DashboardController
+---------------------------------
+DashboardController
+---------------------------------
+- revenueViewModel: RevenueViewModel
+- pdfExportService: PdfExportService
+---------------------------------
++ DashboardController(
+    revenueViewModel: RevenueViewModel,
+    pdfExportService: PdfExportService
+)
++ loadSummary(): void
++ exportReport(): void
+---------------------------------
+💰 4️⃣ PACKAGE: revenue
+🟦 Class: RevenueController
+---------------------------------
+RevenueController
+---------------------------------
+- viewModel: RevenueViewModel
+---------------------------------
++ RevenueController(viewModel: RevenueViewModel)
++ addReceipt(): void
++ deleteReceipt(): void
+---------------------------------
+🟦 Class: RevenueViewModel
+---------------------------------
+RevenueViewModel
+---------------------------------
+- revenueService: RevenueService
+---------------------------------
++ RevenueViewModel(revenueService: RevenueService)
++ getAllReceipts(): List<Receipt>
++ getTotalRevenue(): double
++ getTotalTax(): double
+---------------------------------
+🟦 Class: RevenueService
+---------------------------------
+RevenueService
+---------------------------------
+- receiptRepository: ReceiptRepository
+- taxService: TaxService
+---------------------------------
++ RevenueService(
+    receiptRepository: ReceiptRepository,
+    taxService: TaxService
+)
++ calculateRevenue(): double
++ calculateTax(): double
++ saveReceipt(receipt: Receipt): void
+---------------------------------
+🧾 5️⃣ PACKAGE: tax
+🟦 Class: TaxService
+---------------------------------
+TaxService
+---------------------------------
+- taxCalculator: TaxCalculator
+---------------------------------
++ TaxService(taxCalculator: TaxCalculator)
++ computeTax(amount: double): double
+---------------------------------
+🟦 Class: TaxCalculator
+---------------------------------
+TaxCalculator
+---------------------------------
+---------------------------------
++ TaxCalculator()
++ calculate(amount: double): double
+---------------------------------
+📄 6️⃣ PACKAGE: reporting
+🟦 Class: PdfExportService
+---------------------------------
+PdfExportService
+---------------------------------
+---------------------------------
++ PdfExportService()
++ exportRevenueReport(receipts: List<Receipt>): void
+---------------------------------
+🟦 Class: ReportBuilder
+---------------------------------
+ReportBuilder
+---------------------------------
+---------------------------------
++ ReportBuilder()
++ buildSummary(receipts: List<Receipt>): String
+---------------------------------
+🤖 7️⃣ PACKAGE: ai
+🟦 Class: ChatController
+---------------------------------
+ChatController
+---------------------------------
+- chatService: ChatService
+---------------------------------
++ ChatController(chatService: ChatService)
++ sendMessage(message: String): void
+---------------------------------
+🟦 Class: ChatService
+---------------------------------
+ChatService
+---------------------------------
+- apiKey: String
+---------------------------------
++ ChatService(apiKey: String)
++ askAI(prompt: String): String
+---------------------------------
+🟦 Class: ChatMessage
+---------------------------------
+ChatMessage
+---------------------------------
+- id: Long
+- content: String
+- senderType: String
+- timestamp: LocalDateTime
+---------------------------------
++ ChatMessage()
++ ChatMessage(
+    id: Long,
+    content: String,
+    senderType: String,
+    timestamp: LocalDateTime
+)
+---------------------------------
+🗄 8️⃣ PACKAGE: persistence
+🟦 Class: UserRepository
+---------------------------------
+UserRepository
+---------------------------------
+- databaseManager: DatabaseManager
+---------------------------------
++ UserRepository(databaseManager: DatabaseManager)
++ findByUsername(username: String): User
+---------------------------------
+🟦 Class: ReceiptRepository
+---------------------------------
+ReceiptRepository
+---------------------------------
+- databaseManager: DatabaseManager
+---------------------------------
++ ReceiptRepository(databaseManager: DatabaseManager)
++ save(receipt: Receipt): void
++ findAll(): List<Receipt>
+---------------------------------
+🟦 Class: DatabaseManager
+---------------------------------
+DatabaseManager
+---------------------------------
+- connectionString: String
+---------------------------------
++ DatabaseManager(connectionString: String)
++ connect(): void
+---------------------------------
+👤 9️⃣ DOMAIN MODEL
+🟦 Class: User
+---------------------------------
+User
+---------------------------------
+- id: Long
+- username: String
+- passwordHash: String
+- role: String
+---------------------------------
++ User()
++ User(id: Long, username: String,
+       passwordHash: String, role: String)
+---------------------------------
+🟦 Class: Receipt
+---------------------------------
+Receipt
+---------------------------------
+- id: Long
+- date: LocalDate
+- amount: double
+- taxAmount: double
+- category: String
+---------------------------------
++ Receipt()
++ Receipt(id: Long, date: LocalDate,
+          amount: double, taxAmount: double,
+          category: String)
+---------------------------------

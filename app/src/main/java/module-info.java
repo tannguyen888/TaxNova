@@ -1,81 +1,68 @@
-import io.abc_def.kickstart_fx.core.AppLogs;
-import io.abc_def.kickstart_fx.util.AppJacksonModule;
-import io.abc_def.kickstart_fx.util.ModuleLayerLoader;
-
-import com.fasterxml.jackson.databind.Module;
-import org.slf4j.spi.SLF4JServiceProvider;
-
-open module io.abc_def.kickstart_fx {
-    exports io.abc_def.kickstart_fx.core;
-    exports io.abc_def.kickstart_fx.util;
-    exports io.abc_def.kickstart_fx;
-    exports io.abc_def.kickstart_fx.issue;
-    exports io.abc_def.kickstart_fx.comp.base;
-    exports io.abc_def.kickstart_fx.core.mode;
-    exports io.abc_def.kickstart_fx.prefs;
-    exports io.abc_def.kickstart_fx.update;
-    exports io.abc_def.kickstart_fx.core.check;
-    exports io.abc_def.kickstart_fx.core.window;
-    exports io.abc_def.kickstart_fx.comp;
-    exports io.abc_def.kickstart_fx.platform;
-    exports io.abc_def.kickstart_fx.page;
-    exports io.abc_def.kickstart_fx.core.beacon;
-
-    requires static lombok;
+module com.taxnova {
+    // ==== JavaFX ====
+    requires lombok;
+    requires info.picocli;
+    requires javafx.web;
+    requires java.desktop;
+    requires javafx.fxml;
+    requires javafx.controls;
+    requires javafx.graphics;
     requires com.sun.jna;
     requires com.sun.jna.platform;
-    requires org.slf4j;
-    requires org.slf4j.jdk.platform.logging;
-    requires atlantafx.base;
-    requires com.vladsch.flexmark;
-    requires com.fasterxml.jackson.core;
-    requires com.fasterxml.jackson.databind;
-    requires com.fasterxml.jackson.annotation;
     requires io.xpipe.modulefs;
-    requires org.apache.commons.io;
+
+    // ==== UI Theme ====
+    requires atlantafx.base;
+
+    // ==== JSON ====
+    requires com.fasterxml.jackson.databind;
+    requires com.fasterxml.jackson.core;
+    requires com.fasterxml.jackson.annotation;
+
+    // ==== Logging ====
+    requires org.slf4j;
+
+    // ==== Utility ====
     requires org.apache.commons.lang3;
-    requires javafx.base;
-    requires javafx.controls;
-    requires javafx.media;
-    requires javafx.web;
-    requires javafx.graphics;
+    requires org.apache.commons.io;
+
+    // ==== Icons ====
     requires org.kordamp.ikonli.core;
     requires org.kordamp.ikonli.javafx;
+    requires org.kordamp.ikonli.material2;
+
+    // ==== Sentry ====
     requires io.sentry;
-    requires info.picocli;
-    requires java.instrument;
+
+    // ==== AtlantaFX Sampler ====
+    requires atlantafx.sampler;
+
+    // ==== Monkey Tester ====
+    requires monkey_tester;
+
+    // ==== Markdown ====
+    requires com.vladsch.flexmark;
+
+    // ==== JVM Management ====
     requires java.management;
     requires jdk.management;
-    requires jdk.management.agent;
-    requires java.net.http;
-    requires org.jetbrains.annotations;
+
+    // ==== GitHub API ====
     requires org.kohsuke.github;
 
-    // Required runtime modules
-    requires jdk.charsets;
-    requires jdk.crypto.cryptoki;
-    requires jdk.localedata;
-    requires jdk.accessibility;
-    requires org.kordamp.ikonli.material2;
-    requires org.kordamp.ikonli.materialdesign2;
-    requires org.kordamp.ikonli.bootstrapicons;
-    requires org.kordamp.ikonli.feather;
-    requires jdk.zipfs;
+    // ==== Exports ====
+    exports io.abc_def.kickstart_fx;
+    exports io.abc_def.kickstart_fx.comp;
+    exports io.abc_def.kickstart_fx.core;
+    exports io.abc_def.kickstart_fx.issue;
+    exports io.abc_def.kickstart_fx.page;
+    exports io.abc_def.kickstart_fx.platform;
+    exports io.abc_def.kickstart_fx.prefs;
+    exports io.abc_def.kickstart_fx.update;
+    exports io.abc_def.kickstart_fx.util;
 
-    // AtlantaFX Sampler modules
-    requires atlantafx.sampler;
-    requires datafaker;
-    requires javafx.fxml;
-
-    // Monkey tester stuff
-    requires monkey_tester;
-    requires javafx.swing;
-
-    uses ModuleLayerLoader;
-    uses Module;
-
-    provides Module with
-            AppJacksonModule;
-    provides SLF4JServiceProvider with
-            AppLogs.Slf4jProvider;
+    opens io.abc_def.kickstart_fx.core to
+            javafx.fxml;
+    opens io.abc_def.kickstart_fx.comp to
+            javafx.fxml;
 }
