@@ -10,6 +10,31 @@ repositories {
     flatDir {
         dirs "$rootDir/gradle/gradle_scripts"
     }
+
+}
+extraJavaModuleInfo {
+    failOnMissingModuleInfo.set(true)
+
+    // Flyway
+    module('flyway-core-10.10.0.jar', 'org.flywaydb.core', '10.10.0') {
+        exports('org.flywaydb.core')
+        exports('org.flywaydb.core.api')
+        exports('org.flywaydb.core.api.configuration')
+    }
+    module('flyway-database-postgresql-10.10.0.jar', 'org.flywaydb.database.postgresql', '10.10.0') {
+        requires('org.flywaydb.core')
+        requires('java.sql')
+    }
+
+    // PostgreSQL
+    module('postgresql-42.7.3.jar', 'org.postgresql.jdbc', '42.7.3') {
+        overrideModuleName()
+        exports('org.postgresql')
+        exports('org.postgresql.ds')
+        exports('org.postgresql.jdbc')
+        requires('java.sql')
+        requires('java.logging')
+    }
 }
 
 tasks.register('dist', DefaultTask) {}

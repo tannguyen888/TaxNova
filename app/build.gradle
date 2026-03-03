@@ -16,7 +16,41 @@ configurations {
     implementation.extendsFrom(jna)
 }
 
+extraJavaModuleInfo {
+    failOnMissingModuleInfo.set(true)
+
+    // Flyway
+    module('flyway-core-10.10.0.jar', 'org.flywaydb.core', '10.10.0') {
+        exports('org.flywaydb.core')
+        exports('org.flywaydb.core.api')
+        exports('org.flywaydb.core.api.configuration')
+            exports('org.flywaydb.core.extensibility') 
+    }
+    module('flyway-database-postgresql-10.10.0.jar', 'org.flywaydb.database.postgresql', '10.10.0') {
+        requires('org.flywaydb.core')
+        requires('java.sql')
+    }
+
+    // PostgreSQL — đổi tên thành org.postgresql để khớp module-info.java
+  // PostgreSQL
+module('postgresql-42.7.3.jar', 'org.postgresql.jdbc', '42.7.3') {
+    overrideModuleName()
+    exports('org.postgresql')
+    exports('org.postgresql.ds')
+    exports('org.postgresql.jdbc')
+    requires('java.sql')
+    requires('java.logging')
+}
+module('datafaker-1.3.0.jar', 'net.datafaker', '1.3.0') {
+    exports('net.datafaker')
+    requires('java.base')
+}
+}
+
 dependencies {
+    implementation 'org.postgresql:postgresql:42.7.3'
+    implementation 'org.flywaydb:flyway-core:10.10.0'
+    implementation 'org.flywaydb:flyway-database-postgresql:10.10.0'
     implementation 'com.vladsch.flexmark:flexmark:0.64.8'
     implementation 'com.vladsch.flexmark:flexmark-util:0.64.8'
     implementation 'com.vladsch.flexmark:flexmark-util-options:0.64.8'
@@ -38,7 +72,6 @@ dependencies {
     implementation 'com.vladsch.flexmark:flexmark-ext-anchorlink:0.64.8'
     implementation 'com.vladsch.flexmark:flexmark-ext-yaml-front-matter:0.64.8'
     implementation 'com.vladsch.flexmark:flexmark-ext-toc:0.64.8'
-
     implementation 'info.picocli:picocli:4.7.7'
     implementation 'org.apache.commons:commons-lang3:3.19.0'
     implementation 'io.sentry:sentry:8.20.0'
@@ -55,12 +88,10 @@ dependencies {
     implementation 'io.xpipe:modulefs:0.1.7'
     implementation 'io.github.mkpaz:atlantafx-base:2.1.0'
     implementation "org.kohsuke:github-api:1.330"
-
     implementation files("$rootDir/gradle/gradle_scripts/atlantafx-sampler-2.1.0.jar")
-    implementation ("net.datafaker:datafaker:1.3.0") {
+    implementation("net.datafaker:datafaker:1.3.0") {
         exclude group: "com.github.mifmif", module: "generex"
     }
-
     implementation files("$rootDir/gradle/gradle_scripts/MonkeyTester.jar")
 }
 
@@ -76,7 +107,6 @@ run {
     systemProperty propertyName('writeSysOut'), "true"
     systemProperty propertyName('logLevel'), "trace"
 
-    // Apply passed properties
     for (final def e in System.getProperties().entrySet()) {
         if (e.getKey().toString().contains(snakeProductName)) {
             systemProperty e.getKey().toString(), e.getValue()
@@ -88,7 +118,6 @@ run {
 }
 
 processResources {
-    // Generate binary stylesheets from css
     doLast {
         def pkg = groupName.replaceAll("\\.", "/") + "/" + artifactName.replaceAll("\\.", "/")
         def cssFiles = fileTree(dir: "$sourceSets.main.output.resourcesDir/$pkg/resources/style")
@@ -100,7 +129,6 @@ processResources {
                 mainClass = "com.sun.javafx.css.parser.Css2Bin"
                 args css
             }.result.get()
-
             delete css
         }
     }
@@ -116,14 +144,6 @@ processResources {
     }
 }
 
-distTar {
-    enabled = false
-}
-
-distZip {
-    enabled = false
-}
-
-assembleDist {
-    enabled = false
-}
+distTar { enabled = false }
+distZip { enabled = false }
+assembleDist { enabled = false }
