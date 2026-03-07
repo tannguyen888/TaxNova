@@ -41,10 +41,10 @@ module('postgresql-42.7.3.jar', 'org.postgresql.jdbc', '42.7.3') {
     requires('java.sql')
     requires('java.logging')
 }
-module('datafaker-1.3.0.jar', 'net.datafaker', '1.3.0') {
-    exports('net.datafaker')
-    requires('java.base')
-}
+// module('datafaker-1.3.0.jar', 'net.datafaker', '1.3.0') {
+//     exports('net.datafaker')
+//     requires('java.base')
+// }
 }
 
 dependencies {
