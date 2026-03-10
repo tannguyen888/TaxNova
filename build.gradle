@@ -84,6 +84,8 @@ def getJvmArgs() {
             "--add-opens", "javafx.graphics/com.sun.javafx.tk=$appPackage",
             "--add-opens", "javafx.graphics/com.sun.javafx.tk.quantum=$appPackage",
             "--add-opens", "java.base/java.lang=org.flywaydb.core",
+            "--add-opens", "java.security.sasl/javax.security.sasl=org.postgresql.jdbc",
+            "--add-opens", "java.management/java.lang.management=org.postgresql.jdbc",
             "--add-modules", "com.google.gson"
     ]
 

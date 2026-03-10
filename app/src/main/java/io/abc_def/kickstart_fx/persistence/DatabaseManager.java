@@ -14,7 +14,8 @@ public class DatabaseManager {
 
     private Connection connection;
 
-    public DatabaseManager(String connectionString) {}
+    public DatabaseManager(String connectionString) {
+    }
 
     public void connect() {
 

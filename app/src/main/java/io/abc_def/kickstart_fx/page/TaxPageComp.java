@@ -32,8 +32,8 @@ public class TaxPageComp extends SimpleComp {
 
     private RevenueService revenueService;
     private ReceiptRepository receiptRepository;
-    private volatile boolean databaseReady = false;
-    private final Object dbLock = new Object();
+
+    private boolean databaseReady = false;
 
     @Override
     protected Region createSimple() {
@@ -46,34 +46,7 @@ public class TaxPageComp extends SimpleComp {
         root.getChildren().add(createFormInput());
         root.getChildren().add(createReceiptTable());
 
-        Thread dbThread = new Thread(() -> {
-            System.out.println("DEBUG: Starting database initialization thread");
-            try {
-                synchronized (dbLock) {
-                    if (receiptRepository == null) {
-                        System.out.println("DEBUG: Creating DatabaseManager...");
-                        DatabaseManager dbManager = new DatabaseManager("");
-                        System.out.println("DEBUG: Connecting to database...");
-                        dbManager.connect();
-                        System.out.println("DEBUG: Creating ReceiptRepository...");
-                        receiptRepository = new ReceiptRepository(dbManager);
-                        System.out.println("DEBUG: Creating RevenueService...");
-                        revenueService = new RevenueService(receiptRepository, new TaxService());
-                        System.out.println("DEBUG: Loading from database...");
-                        loadFromDatabase();
-                        databaseReady = true;
-                        System.out.println("DEBUG: Database initialization completed");
-                    }
-                }
-            } catch (Exception e) {
-                System.err.println("Lỗi khởi tạo database: " + e.getMessage());
-                e.printStackTrace();
-                System.out.println("DEBUG: Database initialization failed, loading sample data");
-                loadFromDatabase(); // This will use sample data in catch block
-            }
-        });
-        dbThread.setDaemon(true);
-        dbThread.start();
+        initDatabase();
 
         ScrollPane scroll = new ScrollPane(root);
         scroll.setFitToWidth(true);
@@ -81,33 +54,61 @@ public class TaxPageComp extends SimpleComp {
         return scroll;
     }
 
-    private void loadFromDatabase() {
-        try {
-            if (receiptRepository != null) {
-                var allReceipts = revenueService.getAllReceipts();
-                System.out.println("DEBUG: Loaded from DB: " + allReceipts.size() + " receipts");
+    private void initDatabase() {
 
-                // Update UI on FX Application Thread
+        new Thread(() -> {
+            try {
+
+                DatabaseManager dbManager = new DatabaseManager("");
+                dbManager.connect();
+
+                receiptRepository = new ReceiptRepository(dbManager);
+                revenueService = new RevenueService(receiptRepository, new TaxService());
+
+                loadFromDatabase();
+
+                databaseReady = true;
+
+                System.out.println("Database initialized");
+
+            } catch (Exception e) {
+
+                System.out.println("Database failed -> loading sample data");
+
                 Platform.runLater(() -> {
-                    receipts.clear();
-                    receipts.addAll(allReceipts);
-                    System.out.println("DEBUG: Total receipts in list: " + receipts.size());
+                    receipts.addAll(
+                            new Receipt(1L, LocalDate.now(), 1000000, 150000, "Hàng hóa"),
+                            new Receipt(2L, LocalDate.now().minusDays(1), 500000, 75000, "Dịch vụ"));
                     updateStats();
                 });
-            }
-        } catch (Exception e) {
-            System.err.println("Lỗi load data: " + e.getMessage());
-            System.out.println("DEBUG: Database appears to be empty - this is normal on first run");
 
-            // Add sample data for testing if database fails
-            System.out.println("DEBUG: Adding sample test data to table");
+            }
+
+        }).start();
+
+    }
+
+    private void loadFromDatabase() {
+
+        try {
+
+            var list = revenueService.getAllReceipts();
+
             Platform.runLater(() -> {
-                receipts.addAll(
-                        new Receipt(1L, LocalDate.now(), 1000000, 150000, "Hàng hóa"),
-                        new Receipt(2L, LocalDate.now().minusDays(1), 500000, 75000, "Dịch vụ"));
+
+                receipts.clear();
+                receipts.addAll(list);
+
                 updateStats();
+
             });
+
+        } catch (Exception e) {
+
+            System.out.println("Database empty");
+
         }
+
     }
 
     private VBox createHeader() {
@@ -195,25 +196,30 @@ public class TaxPageComp extends SimpleComp {
         categoryField.setPromptText("Danh mục");
 
         amountField.textProperty().addListener((obs, o, n) -> {
+
             try {
+
                 double amount = Double.parseDouble(n);
                 taxField.setText(String.format("%.2f ₫", amount * 0.15));
+
             } catch (Exception e) {
+
                 taxField.setText("0 ₫");
+
             }
+
         });
 
         Button addBtn = new Button("+ Thêm");
 
         addBtn.setOnAction(e -> {
+
+            if (!databaseReady) {
+                showAlert("Lỗi", "Database đang khởi tạo...");
+                return;
+            }
+
             try {
-                // Wait for database to be ready
-                synchronized (dbLock) {
-                    if (!databaseReady) {
-                        showAlert("Lỗi", "Cơ sở dữ liệu đang khởi tạo, vui lòng chờ...");
-                        return;
-                    }
-                }
 
                 double amount = Double.parseDouble(amountField.getText());
                 String category = categoryField.getText();
@@ -223,31 +229,31 @@ public class TaxPageComp extends SimpleComp {
                     return;
                 }
 
-                Receipt r = new Receipt(System.nanoTime(), datePicker.getValue(), amount, amount * 0.15, category);
+                Receipt r = new Receipt(
+                        System.currentTimeMillis(),
+                        datePicker.getValue(),
+                        amount,
+                        amount * 0.15,
+                        category);
 
-                System.out.println("DEBUG: Created receipt: " + r);
-
-                // Lưu vào database nếu đã khởi tạo
-                if (revenueService != null) {
-                    revenueService.saveReceipt(r);
-                    System.out.println("DEBUG: Saved to database");
-                } else {
-                    System.out.println("DEBUG: revenueService is null - database not initialized");
-                }
+                revenueService.saveReceipt(r);
 
                 receipts.add(r);
-                System.out.println("DEBUG: Added to ObservableList. Total: " + receipts.size());
 
                 amountField.clear();
                 categoryField.clear();
                 taxField.clear();
 
                 updateStats();
+
                 showAlert("Thành công", "Hóa đơn đã được thêm");
 
             } catch (Exception ex) {
-                showAlert("Lỗi", "Doanh thu phải là số: " + ex.getMessage());
+
+                showAlert("Lỗi", "Doanh thu phải là số");
+
             }
+
         });
 
         grid.add(new Label("Ngày"), 0, 0);
@@ -291,19 +297,18 @@ public class TaxPageComp extends SimpleComp {
         amountCol.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
 
         amountCol.setOnEditCommit(e -> {
+
             Receipt r = e.getRowValue();
 
             r.setAmount(e.getNewValue());
             r.setTaxAmount(e.getNewValue() * 0.15);
 
-            // Lưu vào database nếu đã khởi tạo
-            if (receiptRepository != null) {
-                receiptRepository.save(r);
-            }
+            receiptRepository.save(r);
 
             table.refresh();
 
             updateStats();
+
         });
 
         TableColumn<Receipt, Double> taxCol = new TableColumn<>("Thuế");
@@ -315,15 +320,17 @@ public class TaxPageComp extends SimpleComp {
         catCol.setCellFactory(TextFieldTableCell.forTableColumn());
 
         catCol.setOnEditCommit(e -> {
+
             Receipt r = e.getRowValue();
-            String newVal = e.getNewValue() != null ? e.getNewValue() : "";
+
+            String newVal = e.getNewValue() == null ? "" : e.getNewValue();
+
             r.setCategory(newVal);
 
-            if (receiptRepository != null) {
-                receiptRepository.save(r);
-            }
+            receiptRepository.save(r);
 
             table.refresh();
+
         });
 
         TableColumn<Receipt, Void> actionCol = new TableColumn<>("Hành Động");
@@ -333,17 +340,19 @@ public class TaxPageComp extends SimpleComp {
             Button deleteBtn = new Button("Xóa");
 
             {
+
                 deleteBtn.setOnAction(e -> {
+
                     Receipt r = getTableView().getItems().get(getIndex());
 
-                    if (receiptRepository != null) {
-                        receiptRepository.delete(r);
-                    }
+                    receiptRepository.delete(r);
 
                     receipts.remove(r);
 
                     updateStats();
+
                 });
+
             }
 
             @Override
@@ -352,7 +361,9 @@ public class TaxPageComp extends SimpleComp {
                 super.updateItem(item, empty);
 
                 setGraphic(empty ? null : deleteBtn);
+
             }
+
         });
 
         table.getColumns().addAll(dateCol, amountCol, taxCol, catCol, actionCol);
@@ -360,11 +371,17 @@ public class TaxPageComp extends SimpleComp {
         FilteredList<Receipt> filtered = new FilteredList<>(receipts, p -> true);
 
         searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-            filtered.setPredicate(r -> {
-                if (newVal == null || newVal.isEmpty()) return true;
 
-                return r.getCategory().toLowerCase().contains(newVal.toLowerCase());
+            filtered.setPredicate(r -> {
+
+                if (newVal == null || newVal.isEmpty())
+                    return true;
+
+                return r.getCategory() != null &&
+                        r.getCategory().toLowerCase().contains(newVal.toLowerCase());
+
             });
+
         });
 
         table.setItems(filtered);
@@ -383,25 +400,8 @@ public class TaxPageComp extends SimpleComp {
         totalRevenueLabel.setText(String.format("%.2f ₫", revenue));
         totalTaxLabel.setText(String.format("%.2f ₫", tax));
         receiptCountLabel.setText(String.valueOf(receipts.size()));
+
     }
-
-    // public void updateTablesCol() {
-
-    // DoubleStream revenue = receipts.stream()
-    // .mapToDouble(Receipt::getAmount);
-
-    // DoubleStream tax = receipts.stream()
-    // .mapToDouble(Receipt::getTaxAmount);
-
-    // String category = receipts.stream()
-    // .map(Receipt::getCategory)
-    // .findFirst()
-    // .orElse("");
-
-    // doanhThu.setText(String.format("%.2f ₫", revenue));
-    // thue.setText(String.format("%.2f ₫", tax));
-    // danhMuc.setText(String.format("%s", category));
-    // }
 
     private void showAlert(String title, String msg) {
 
@@ -411,5 +411,7 @@ public class TaxPageComp extends SimpleComp {
         alert.setContentText(msg);
 
         alert.showAndWait();
+
     }
+
 }
