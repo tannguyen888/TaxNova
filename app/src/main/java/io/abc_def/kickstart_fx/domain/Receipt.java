@@ -10,8 +10,7 @@ public class Receipt {
     private double taxAmount;
     private String category;
 
-    public Receipt() {
-    }
+    public Receipt() {}
 
     public Receipt(Long id, LocalDate date, double amount, double taxAmount, String category) {
         this.id = id;

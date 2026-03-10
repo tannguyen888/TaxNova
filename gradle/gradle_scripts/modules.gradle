@@ -52,3 +52,15 @@ extraJavaModuleInfo {
         exportAllPackages()
     }
 }
+
+extraJavaModuleInfo {
+    module("org.flywaydb:flyway-core", "org.flywaydb.core") {
+        requires('java.sql')
+        requires('com.google.gson')
+        requires('com.fasterxml.jackson.databind')
+        requires('com.fasterxml.jackson.core')
+        requires('com.fasterxml.jackson.annotation')
+        uses('org.flywaydb.core.extensibility.Plugin')
+        exportAllPackages()
+    }
+}

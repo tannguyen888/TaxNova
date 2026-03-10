@@ -4,8 +4,8 @@ public class TaxService {
 
     private final TaxCalculator taxCalculator;
 
-    public TaxService(TaxCalculator taxCalculator) {
-        this.taxCalculator = taxCalculator;
+    public TaxService() {
+        this.taxCalculator = new TaxCalculator();
     }
 
     public double computeTax(double amount) {
@@ -18,5 +18,4 @@ public class TaxService {
 
         return tax;
     }
-
 }

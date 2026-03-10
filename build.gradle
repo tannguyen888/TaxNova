@@ -12,7 +12,7 @@ plugins {
 allprojects { subproject ->
     apply plugin: 'org.gradlex.extra-java-module-info'
     extraJavaModuleInfo {
-        failOnMissingModuleInfo.set(true)
+        failOnMissingModuleInfo.set(false)
     }
     apply from: "$rootDir/gradle/gradle_scripts/modules.gradle"
 
@@ -82,7 +82,9 @@ def getJvmArgs() {
             "--add-opens", "javafx.graphics/com.sun.glass.ui=$appPackage",
             "--add-opens", "javafx.graphics/javafx.stage=$appPackage",
             "--add-opens", "javafx.graphics/com.sun.javafx.tk=$appPackage",
-            "--add-opens", "javafx.graphics/com.sun.javafx.tk.quantum=$appPackage"
+            "--add-opens", "javafx.graphics/com.sun.javafx.tk.quantum=$appPackage",
+            "--add-opens", "java.base/java.lang=org.flywaydb.core",
+            "--add-modules", "com.google.gson"
     ]
 
     jvmRunArgs += ['-XX:+UseCompactObjectHeaders']

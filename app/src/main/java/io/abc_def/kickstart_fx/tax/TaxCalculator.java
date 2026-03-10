@@ -7,7 +7,6 @@ public class TaxCalculator {
     public double calculator(double amount) {
         return amount * TAX_RATE.getTaxRate();
     }
-
 }
 
 class ContainertaxRate {
@@ -21,5 +20,4 @@ class ContainertaxRate {
     public double getTaxRate() {
         return taxRate;
     }
-
 }

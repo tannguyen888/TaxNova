@@ -1,6 +1,7 @@
 package io.abc_def.kickstart_fx.persistence;
 
 import io.abc_def.kickstart_fx.domain.Receipt;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,15 +34,60 @@ public class ReceiptRepository {
     }
 
     public void save(Receipt receipt) {
-        String sql = "INSERT INTO receipts (date, amount, tax_amount, category) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement stmt = databaseManager.getConnection().prepareStatement(sql)) {
-            stmt.setDate(1, Date.valueOf(receipt.getDate()));
-            stmt.setDouble(2, receipt.getAmount());
-            stmt.setDouble(3, receipt.getTaxAmount());
-            stmt.setString(4, receipt.getCategory());
-            stmt.executeUpdate();
+        // Check if receipt already exists in database
+        String checkSql = "SELECT COUNT(*) FROM receipts WHERE id = ?";
+        try (PreparedStatement checkStmt = databaseManager.getConnection().prepareStatement(checkSql)) {
+            checkStmt.setLong(1, receipt.getId());
+            ResultSet rs = checkStmt.executeQuery();
+            rs.next();
+            int count = rs.getInt(1);
+
+            if (count > 0) {
+                // UPDATE existing record
+                String updateSql =
+                        "UPDATE receipts SET date = ?, amount = ?, tax_amount = ?, category = ? WHERE id = ?";
+                try (PreparedStatement updateStmt =
+                        databaseManager.getConnection().prepareStatement(updateSql)) {
+                    updateStmt.setDate(1, Date.valueOf(receipt.getDate()));
+                    updateStmt.setDouble(2, receipt.getAmount());
+                    updateStmt.setDouble(3, receipt.getTaxAmount());
+                    updateStmt.setString(4, receipt.getCategory());
+                    updateStmt.setLong(5, receipt.getId());
+                    updateStmt.executeUpdate();
+                    System.out.println("DEBUG: Updated receipt ID " + receipt.getId());
+                }
+            } else {
+                // INSERT new record
+                String insertSql =
+                        "INSERT INTO receipts (id, date, amount, tax_amount, category) VALUES (?, ?, ?, ?, ?)";
+                try (PreparedStatement insertStmt =
+                        databaseManager.getConnection().prepareStatement(insertSql)) {
+                    insertStmt.setLong(1, receipt.getId());
+                    insertStmt.setDate(2, Date.valueOf(receipt.getDate()));
+                    insertStmt.setDouble(3, receipt.getAmount());
+                    insertStmt.setDouble(4, receipt.getTaxAmount());
+                    insertStmt.setString(5, receipt.getCategory());
+                    insertStmt.executeUpdate();
+                    System.out.println("DEBUG: Inserted receipt ID " + receipt.getId());
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException("Lỗi lưu receipt: " + e.getMessage(), e);
         }
+    }
+
+    public void delete(Receipt receipt) {
+        String sql = "DELETE FROM receipts WHERE id = ?";
+        try (PreparedStatement stmt = databaseManager.getConnection().prepareStatement(sql)) {
+            stmt.setLong(1, receipt.getId());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi xóa receipt: " + e.getMessage(), e);
+        }
+    }
+
+    public void executeUpdate(PreparedStatement stmt, Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'executeUpdate'");
     }
 }

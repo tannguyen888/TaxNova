@@ -118,6 +118,11 @@ public class AppLayoutModel {
                         new MarkdownPageComp(),
                         null),
                 new Entry(
+                        AppI18n.observable("tax"),
+                        new LabelGraphic.IconGraphic("mdi2c-calculator"),
+                        new TaxPageComp(),
+                        null),
+                new Entry(
                         AppI18n.observable("monkeyTester"),
                         new LabelGraphic.IconGraphic("mdi2s-shape"),
                         new MonkeyTesterPageComp(),

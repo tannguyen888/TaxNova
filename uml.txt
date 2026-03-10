@@ -174,3 +174,13 @@
 | + askAI()         |
 | + parseResponse() |
 +-------------------+
+
+
+& .\gradlew run 2>&1 | Select-Object -First 200
+
+
+
+& .\gradlew spotlessApply
+
+kill terminal và chạy
+cd 'C:\project\java\expensecontroll\kickstartfx' -PassThru | % { & "$($_.Path)\gradlew" run }
