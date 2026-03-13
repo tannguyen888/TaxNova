@@ -89,4 +89,8 @@ public class DashboardController {
         alert.setContentText("Xuất PDF thành công!");
         alert.showAndWait();
     }
+
+    public void showDashboard() {
+        System.out.println("✓ Dashboard loaded");
+    }
 }

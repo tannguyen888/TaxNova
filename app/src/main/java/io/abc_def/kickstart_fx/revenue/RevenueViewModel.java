@@ -2,6 +2,7 @@ package io.abc_def.kickstart_fx.revenue;
 
 import io.abc_def.kickstart_fx.domain.Receipt;
 
+import java.time.YearMonth;
 import java.util.List;
 
 public class RevenueViewModel {
@@ -15,19 +16,35 @@ public class RevenueViewModel {
         return revenueService.getAllReceipts();
     }
 
-    public double getTotalRevenue() {
-        return revenueService.calculateRevenue();
+    public long getTotalRevenue() {
+        return revenueService.calculateTotalRevenue();
     }
 
-    public double getTotalTax() {
-        return revenueService.calculateTax();
+    public long getTotalTax() {
+        return revenueService.calculateTotalTax();
+    }
+
+    public long getMonthlyRevenue(YearMonth month) {
+        return revenueService.calculateMonthlyRevenue(month);
+    }
+
+    public long getMonthlyTax(YearMonth month) {
+        return revenueService.calculateMonthlyTax(month);
     }
 
     public void deleteReceipt(Receipt receipt) {
         revenueService.deleteReceipt(receipt);
     }
 
-    public Object saveReceipt(Receipt newReceipt) {
-        return revenueService.saveReceipt(newReceipt);
+    public void saveReceipt(Receipt newReceipt) {
+        revenueService.saveReceipt(newReceipt);
+    }
+
+    public double getAverageRevenue() {
+        return revenueService.getAverageRevenue();
+    }
+
+    public double getAverageTaxRate() {
+        return revenueService.getAverageTaxRate();
     }
 }

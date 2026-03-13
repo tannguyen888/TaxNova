@@ -23,7 +23,7 @@ public class PdfExportService {
     }
 
     /**
-     * Export một receipt duy nhất ra PDF
+     * Export một receipt ra file PDF
      *
      * @param receipt    receipt cần export
      * @param outputPath đường dẫn file PDF đích

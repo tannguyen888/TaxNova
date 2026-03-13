@@ -1,5 +1,7 @@
 package io.abc_def.kickstart_fx.login;
 
+import io.abc_def.kickstart_fx.persistence.UserRepository;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -32,9 +34,34 @@ public class LoginController {
     }
 
     @FXML
+    public void onRegister() {
+        String username = userName.getText().trim();
+        String password = passwordField.getText().trim();
+
+        try {
+            if (viewModel != null) {
+                viewModel.setUsername(username);
+                viewModel.setPassword(password);
+                UserRepository userRepository = viewModel.getUserRepository();
+                AuthService authService = new AuthService(userRepository);
+                authService.register(username, password);
+                errorLabel.setStyle("-fx-text-fill:#4caf50;");
+                errorLabel.setText("Đăng ký thành công! Vui lòng đăng nhập");
+                errorLabel.setVisible(true);
+                userName.clear();
+                passwordField.clear();
+            }
+        } catch (IllegalArgumentException e) {
+            errorLabel.setStyle("-fx-text-fill:#d32f2f;");
+            errorLabel.setText("Lỗi đăng ký: " + e.getMessage());
+            errorLabel.setVisible(true);
+        }
+    }
+
+    @FXML
     public void onLogin() {
         String username = userName.getText().trim();
-        String password = passwordField.getText().trim(); // chữ p thường
+        String password = passwordField.getText().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
             errorLabel.setText("Please don't leave blank empty");
@@ -47,10 +74,13 @@ public class LoginController {
         boolean success = viewModel.login();
 
         if (success) {
-            System.out.println("Đăng nhập thành công!");
-            // TODO: chuyển sang Dashboard
+            System.out.println("✓ Login successful!");
+            errorLabel.setStyle("-fx-text-fill:#4caf50;");
+            errorLabel.setText("Đăng nhập thành công!");
+            errorLabel.setVisible(true);
         } else {
-            errorLabel.setText("Sai tài khoản hoặc mật khẩu!");
+            errorLabel.setStyle("-fx-text-fill:#d32f2f;");
+            errorLabel.setText("Invalid username or password");
             errorLabel.setVisible(true);
         }
     }

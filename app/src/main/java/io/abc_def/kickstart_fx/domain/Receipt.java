@@ -1,62 +1,130 @@
 package io.abc_def.kickstart_fx.domain;
 
+import javafx.beans.property.*;
+
 import java.time.LocalDate;
 
 public class Receipt {
 
-    private Long id;
-    private LocalDate date;
-    private double amount; // ← bạn đang thiếu field này!
-    private double taxAmount;
-    private String category;
+    private SimpleLongProperty id;
+    private SimpleObjectProperty<LocalDate> date;
+    private SimpleLongProperty revenue;
+    private SimpleLongProperty tax;
+    private SimpleStringProperty description;
 
-    public Receipt() {}
-
-    public Receipt(Long id, LocalDate date, double amount, double taxAmount, String category) {
-        this.id = id;
-        this.date = date;
-        this.amount = amount; // ← thiếu dòng này
-        this.taxAmount = taxAmount;
-        this.category = category;
+    public Receipt() {
+        this.id = new SimpleLongProperty();
+        this.date = new SimpleObjectProperty<>();
+        this.revenue = new SimpleLongProperty();
+        this.tax = new SimpleLongProperty();
+        this.description = new SimpleStringProperty();
     }
 
+    public Receipt(Long id, LocalDate date, long revenue, long tax, String description) {
+        this.id = new SimpleLongProperty(id);
+        this.date = new SimpleObjectProperty<>(date);
+        this.revenue = new SimpleLongProperty(revenue);
+        this.tax = new SimpleLongProperty(tax);
+        this.description = new SimpleStringProperty(description);
+    }
+
+    public Receipt(LocalDate date, long revenue, long tax, String description) {
+        this(null, date, revenue, tax, description);
+    }
+
+    // Getters and Setters
     public Long getId() {
+        return id.get();
+    }
+
+    public void setId(Long value) {
+        id.set(value);
+    }
+
+    public SimpleLongProperty idProperty() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public LocalDate getDate() {
+        return date.get();
     }
 
-    public LocalDate getDate() {
+    public void setDate(LocalDate value) {
+        date.set(value);
+    }
+
+    public SimpleObjectProperty<LocalDate> dateProperty() {
         return date;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public long getRevenue() {
+        return revenue.get();
     }
 
+    public void setRevenue(long value) {
+        revenue.set(value);
+    }
+
+    public SimpleLongProperty revenueProperty() {
+        return revenue;
+    }
+
+    public long getTax() {
+        return tax.get();
+    }
+
+    public void setTax(long value) {
+        tax.set(value);
+    }
+
+    public SimpleLongProperty taxProperty() {
+        return tax;
+    }
+
+    public String getDescription() {
+        return description.get();
+    }
+
+    public void setDescription(String value) {
+        description.set(value);
+    }
+
+    public SimpleStringProperty descriptionProperty() {
+        return description;
+    }
+
+    // Legacy method names for compatibility
     public double getAmount() {
-        return amount;
+        return revenue.get();
     }
 
-    public void setAmount(double amount) {
-        this.amount = amount;
+    public void setAmount(double value) {
+        revenue.set((long) value);
     }
 
     public double getTaxAmount() {
-        return taxAmount;
+        return tax.get();
     }
 
-    public void setTaxAmount(double taxAmount) {
-        this.taxAmount = taxAmount;
+    public void setTaxAmount(double value) {
+        tax.set((long) value);
     }
 
     public String getCategory() {
-        return category;
+        return description.get();
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setCategory(String value) {
+        description.set(value);
+    }
+
+    @Override
+    public String toString() {
+        return "Receipt{" + "id="
+                + id.get() + ", date="
+                + date.get() + ", revenue="
+                + revenue.get() + ", tax="
+                + tax.get() + ", description='"
+                + description.get() + '\'' + '}';
     }
 }

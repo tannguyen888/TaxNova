@@ -176,11 +176,17 @@
 +-------------------+
 
 
-& .\gradlew run 2>&1 | Select-Object -First 200
-
-
+& .\gradlew run 2>&1 | Sel ect-Object -First 200
+// chay trc, check xem có cần dùng lệnh spotlessApply ko
+& .\gradlew build 2>&1 | Select-Object -Last 25
 
 & .\gradlew spotlessApply
 
 kill terminal và chạy
 cd 'C:\project\java\expensecontroll\kickstartfx' -PassThru | % { & "$($_.Path)\gradlew" run }
+
+check for build failure after no errors  or warning
+& .\gradlew app:compileJava --stacktrace 2>&1 | Select-Object -Last 30
+
+
+Get-Process java -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 3; Write-Host "✅ Java processes terminated"

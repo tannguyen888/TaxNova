@@ -5,7 +5,6 @@ import io.abc_def.kickstart_fx.page.*;
 import io.abc_def.kickstart_fx.platform.LabelGraphic;
 import io.abc_def.kickstart_fx.platform.PlatformThread;
 import io.abc_def.kickstart_fx.util.GlobalTimer;
-import io.abc_def.kickstart_fx.util.Hyperlinks;
 import io.abc_def.kickstart_fx.util.ThreadHelper;
 
 import javafx.beans.property.BooleanProperty;
@@ -93,29 +92,19 @@ public class AppLayoutModel {
     private List<Entry> createEntryList() {
         var l = new ArrayList<>(List.of(
                 new Entry(
-                        AppI18n.observable("blueprints"),
-                        new LabelGraphic.IconGraphic("mdi2a-aspect-ratio"),
-                        new BlueprintsPageComp(),
+                        AppI18n.observable("login"),
+                        new LabelGraphic.IconGraphic("mdi2l-login-variant"),
+                        new LoginPageComp(),
                         null),
                 new Entry(
-                        AppI18n.observable("musicPlayer"),
-                        new LabelGraphic.IconGraphic("mdi2m-music"),
-                        new MusicPlayerPageComp(),
+                        AppI18n.observable("dashboard"),
+                        new LabelGraphic.IconGraphic("mdi2h-home"),
+                        new DashboardPageComp(),
                         null),
                 new Entry(
-                        AppI18n.observable("fileBrowser"),
-                        new LabelGraphic.IconGraphic("mdi2f-file-cabinet"),
-                        new FileBrowserPageComp(),
-                        null),
-                new Entry(
-                        AppI18n.observable("overview"),
-                        new LabelGraphic.IconGraphic("mdi2l-list-box-outline"),
-                        new OverviewPageComp(),
-                        null),
-                new Entry(
-                        AppI18n.observable("markdown"),
-                        new LabelGraphic.IconGraphic("mdi2l-language-markdown-outline"),
-                        new MarkdownPageComp(),
+                        AppI18n.observable("receipts"),
+                        new LabelGraphic.IconGraphic("mdi2r-receipt"),
+                        new ReceiptsPageComp(),
                         null),
                 new Entry(
                         AppI18n.observable("tax"),
@@ -123,30 +112,25 @@ public class AppLayoutModel {
                         new TaxPageComp(),
                         null),
                 new Entry(
-                        AppI18n.observable("monkeyTester"),
-                        new LabelGraphic.IconGraphic("mdi2s-shape"),
-                        new MonkeyTesterPageComp(),
+                        AppI18n.observable("reports"),
+                        new LabelGraphic.IconGraphic("mdi2c-chart-box"),
+                        new ReportsPageComp(),
                         null),
                 new Entry(
-                        AppI18n.observable("developer"),
-                        new LabelGraphic.IconGraphic("mdi2c-code-tags"),
-                        new DeveloperPageComp(),
+                        AppI18n.observable("profile"),
+                        new LabelGraphic.IconGraphic("mdi2a-account"),
+                        new ProfilePageComp(),
                         null),
                 new Entry(
                         AppI18n.observable("settings"),
-                        new LabelGraphic.IconGraphic("mdsmz-miscellaneous_services"),
-                        new PrefsPageComp(),
+                        new LabelGraphic.IconGraphic("mdi2c-cog"),
+                        new SettingsPageComp(),
                         null),
                 new Entry(
-                        AppI18n.observable("docs"),
-                        new LabelGraphic.IconGraphic("mdi2b-book-open-variant"),
-                        null,
-                        () -> Hyperlinks.open(Hyperlinks.DOCS)),
-                new Entry(
-                        AppI18n.observable("visitGithubRepository"),
-                        new LabelGraphic.IconGraphic("mdi2g-github"),
-                        null,
-                        () -> Hyperlinks.open(Hyperlinks.GITHUB))));
+                        AppI18n.observable("prefs"),
+                        new LabelGraphic.IconGraphic("mdsmz-miscellaneous_services"),
+                        new PrefsPageComp(),
+                        null)));
         return l;
     }
 

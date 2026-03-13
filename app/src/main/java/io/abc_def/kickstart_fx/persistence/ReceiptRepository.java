@@ -23,8 +23,8 @@ public class ReceiptRepository {
                 list.add(new Receipt(
                         rs.getLong("id"),
                         rs.getDate("date").toLocalDate(),
-                        rs.getDouble("amount"),
-                        rs.getDouble("tax_amount"),
+                        Math.round(rs.getDouble("amount")),
+                        Math.round(rs.getDouble("tax_amount")),
                         rs.getString("category")));
             }
         } catch (SQLException e) {
@@ -86,8 +86,46 @@ public class ReceiptRepository {
         }
     }
 
-    public void executeUpdate(PreparedStatement stmt, Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'executeUpdate'");
+    public void deleteById(Long id) {
+        String sql = "DELETE FROM receipts WHERE id = ?";
+        try (PreparedStatement stmt = databaseManager.getConnection().prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi xóa receipt theo ID: " + e.getMessage(), e);
+        }
+    }
+
+    public void update(Receipt receipt) {
+        String sql = "UPDATE receipts SET date = ?, amount = ?, tax_amount = ?, category = ? WHERE id = ?";
+        try (PreparedStatement stmt = databaseManager.getConnection().prepareStatement(sql)) {
+            stmt.setDate(1, Date.valueOf(receipt.getDate()));
+            stmt.setLong(2, receipt.getRevenue());
+            stmt.setLong(3, receipt.getTax());
+            stmt.setString(4, receipt.getDescription());
+            stmt.setLong(5, receipt.getId());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi cập nhật receipt: " + e.getMessage(), e);
+        }
+    }
+
+    public Receipt findById(Long id) {
+        String sql = "SELECT * FROM receipts WHERE id = ?";
+        try (PreparedStatement stmt = databaseManager.getConnection().prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return new Receipt(
+                        rs.getLong("id"),
+                        rs.getDate("date").toLocalDate(),
+                        (long) rs.getDouble("amount"),
+                        (long) rs.getDouble("tax_amount"),
+                        rs.getString("category"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi tìm receipt theo ID: " + e.getMessage(), e);
+        }
+        return null;
     }
 }

@@ -1,6 +1,7 @@
 package io.abc_def.kickstart_fx.login;
 
 import io.abc_def.kickstart_fx.persistence.DatabaseManager;
+import io.abc_def.kickstart_fx.persistence.UserRepository;
 
 import java.sql.*;
 
@@ -49,5 +50,9 @@ public class LoginViewModel {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public UserRepository getUserRepository() {
+        return new UserRepository(databaseManager);
     }
 }
