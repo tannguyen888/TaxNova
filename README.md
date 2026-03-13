@@ -72,6 +72,21 @@ Database tables will be created automatically on first run via Flyway migration.
 ./gradlew clean build
 ```
 
+
+run app // VietNamese
+1. Chạy app: ./gradlew run
+2. Login page hiển thị (yêu cầu tài khoản)
+3. Đăng ký account: username + password
+4. Sau khi đăng nhập → Vào Dashboard
+5. Quản lý chi phí, thuế, hóa đơn
+## License
+
+//ENG
+1. Run the app: ./gradlew run
+2. Login page displayed (account required)
+3. Register account: username + password
+4. After logging in → Go to Dashboard
+5. Manage expenses, taxes, invoices
 ## License
 
 This project is based on [KickstartFX](https://kickstartfx.xpipe.io/) template.
