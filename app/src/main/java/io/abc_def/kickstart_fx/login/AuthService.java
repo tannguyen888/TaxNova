@@ -1,6 +1,7 @@
 package io.abc_def.kickstart_fx.login;
 
 import io.abc_def.kickstart_fx.domain.User;
+import io.abc_def.kickstart_fx.persistence.DatabaseManager;
 import io.abc_def.kickstart_fx.persistence.UserRepository;
 
 import java.security.MessageDigest;
@@ -11,9 +12,33 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private static User currentUser;
+    private final DatabaseManager databaseManager;
 
-    public AuthService(UserRepository userRepository) {
+    public AuthService(UserRepository userRepository, DatabaseManager databaseManager) {
         this.userRepository = userRepository;
+        this.databaseManager = databaseManager;
+        databaseManager.connect();
+    }
+
+    public void forgetPassword(String username, String newPassword) {
+       String sql = "SELECT * FROM users WHERE username = ?";
+
+        try (var stmt = databaseManager.getConnection().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            var rs = stmt.executeQuery();
+            if (rs.next()) {
+                String email = rs.getString("Enter your name");
+            if (email != null) {
+                // Simulate sending a password reset email
+                System.out.println("Ready to call for changepassword()");
+                
+                changePassword(username, newPassword);
+            } else {
+                System.out.println("No email associated with this username.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean authenticate(String username, String password) {
@@ -38,6 +63,16 @@ public class AuthService {
         var newUser = new User(username, hashedPassword, "USER");
         userRepository.save(newUser);
         return newUser;
+    }
+
+    public void changePassword(String username, String newPassword) {
+        var user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+        String hashedPassword = hashPassword(newPassword);
+        user.setPasswordHash(hashedPassword);
+        userRepository.save(user);
     }
 
     public User getUser(String username) {

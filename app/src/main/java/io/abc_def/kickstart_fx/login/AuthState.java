@@ -28,6 +28,16 @@ public class AuthState {
         currentUsername = username;
     }
 
+    public void login(String username) {
+        setCurrentUsername(username);
+        setAuthenticated(true);
+    }
+
+    public void logout(String username) {
+        setCurrentUsername(null);
+        setAuthenticated(false);
+    }
+
     public static void logout() {
         authenticated.set(false);
         currentUsername = null;
