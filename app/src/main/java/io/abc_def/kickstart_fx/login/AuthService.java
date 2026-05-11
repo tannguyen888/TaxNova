@@ -21,20 +21,21 @@ public class AuthService {
     }
 
     public void forgetPassword(String username, String newPassword) {
-       String sql = "SELECT * FROM users WHERE username = ?";
+        String sql = "SELECT * FROM users WHERE username = ?";
 
         try (var stmt = databaseManager.getConnection().prepareStatement(sql)) {
             stmt.setString(1, username);
             var rs = stmt.executeQuery();
             if (rs.next()) {
                 String email = rs.getString("Enter your name");
-            if (email != null) {
-                // Simulate sending a password reset email
-                System.out.println("Ready to call for changepassword()");
-                
-                changePassword(username, newPassword);
-            } else {
-                System.out.println("No email associated with this username.");
+                if (email != null) {
+                    // Simulate sending a password reset email
+                    System.out.println("Ready to call for changepassword()");
+
+                    changePassword(username, newPassword);
+                } else {
+                    System.out.println("No email associated with this username.");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -44,12 +45,24 @@ public class AuthService {
     public boolean authenticate(String username, String password) {
         var user = userRepository.findByUsername(username);
         if (user == null) {
+            System.out.println("❌ User not found in database: " + username);
             return false;
         }
         String hashedPassword = hashPassword(password);
-        boolean authenticated = user.getPasswordHash().equals(hashedPassword);
+        String storedHash = user.getPasswordHash();
+
+        // Debug logging
+        System.out.println("📝 Authenticating user: " + username);
+        System.out.println("   Input password hash: " + hashedPassword);
+        System.out.println("   Stored hash:        " + storedHash);
+        System.out.println("   Match: " + hashedPassword.equals(storedHash));
+
+        boolean authenticated = storedHash.equals(hashedPassword);
         if (authenticated) {
             currentUser = user;
+            System.out.println("✓ Login successful!");
+        } else {
+            System.out.println("✗ Password mismatch!");
         }
         return authenticated;
     }

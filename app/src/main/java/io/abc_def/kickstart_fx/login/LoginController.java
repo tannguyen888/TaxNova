@@ -1,5 +1,6 @@
 package io.abc_def.kickstart_fx.login;
 
+import io.abc_def.kickstart_fx.persistence.DatabaseManager;
 import io.abc_def.kickstart_fx.persistence.UserRepository;
 
 import javafx.fxml.FXML;
@@ -43,7 +44,9 @@ public class LoginController {
                 viewModel.setUsername(username);
                 viewModel.setPassword(password);
                 UserRepository userRepository = viewModel.getUserRepository();
-                AuthService authService = new AuthService(userRepository);
+                DatabaseManager dbManager = new DatabaseManager("");
+                dbManager.connect();
+                AuthService authService = new AuthService(userRepository, dbManager);
                 authService.register(username, password);
                 errorLabel.setStyle("-fx-text-fill:#4caf50;");
                 errorLabel.setText("Đăng ký thành công! Vui lòng đăng nhập");

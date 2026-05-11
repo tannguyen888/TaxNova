@@ -34,7 +34,7 @@ import java.util.List;
 public class SideMenuBarComp extends Comp<CompStructure<VBox>> {
 
     private final Property<AppLayoutModel.Entry> value;
-    private final List<AppLayoutModel.Entry> entries;
+    private final ObservableList<AppLayoutModel.Entry> entries;
     private final ObservableList<AppLayoutModel.QueueEntry> queueEntries;
 
     @Override
@@ -42,48 +42,25 @@ public class SideMenuBarComp extends Comp<CompStructure<VBox>> {
         var vbox = new VBox();
         vbox.setFillWidth(true);
 
-        for (AppLayoutModel.Entry e : entries) {
-            var b = new IconButtonComp(e.icon(), () -> {
-                // Don't allow switching prior to startup
-                if (AppOperationMode.isInStartup() || AppOperationMode.isInShutdown()) {
-                    return;
+        // Listener for entries changes
+        entries.addListener((ListChangeListener<? super AppLayoutModel.Entry>) change -> {
+            while (change.next()) {
+                if (change.wasAdded() || change.wasRemoved()) {
+                    // Rebuild the sidebar when entries change
+                    PlatformThread.runLaterIfNeeded(() -> {
+                        vbox.getChildren().clear();
+                        rebuildMenuItems(vbox);
+                        addUpdateButton(vbox);
+                        addFiller(vbox);
+                    });
                 }
+            }
+        });
 
-                if (e.action() != null) {
-                    e.action().run();
-                    return;
-                }
-
-                value.setValue(e);
-            });
-            b.tooltip(e.name());
-
-            var stack = createStyle(e, b);
-            vbox.getChildren().add(stack.createRegion());
-        }
-
-        {
-            var b = new IconButtonComp("mdi2u-update", () -> UpdateAvailableDialog.showIfNeeded(false));
-            b.tooltipKey("updateAvailableTooltip");
-            var stack = createStyle(null, b);
-            stack.hide(Bindings.createBooleanBinding(
-                    () -> {
-                        return AppDistributionType.get()
-                                        .getUpdateHandler()
-                                        .getLastUpdateCheckResult()
-                                        .getValue()
-                                == null;
-                    },
-                    AppDistributionType.get().getUpdateHandler().getLastUpdateCheckResult()));
-            vbox.getChildren().add(stack.createRegion());
-        }
-
-        var filler = new Button();
-        filler.setDisable(true);
-        filler.setMaxHeight(3000);
-        vbox.getChildren().add(filler);
-        VBox.setVgrow(filler, Priority.ALWAYS);
-        vbox.getStyleClass().add("sidebar-comp");
+        // Initial build
+        rebuildMenuItems(vbox);
+        addUpdateButton(vbox);
+        addFiller(vbox);
 
         var queueButtons = new VBox();
         queueEntries.addListener((ListChangeListener<? super AppLayoutModel.QueueEntry>) c -> {
@@ -124,6 +101,53 @@ public class SideMenuBarComp extends Comp<CompStructure<VBox>> {
         return new SimpleCompStructure<>(vbox);
     }
 
+    private void rebuildMenuItems(VBox vbox) {
+        for (AppLayoutModel.Entry e : entries) {
+            var b = new IconButtonComp(e.icon(), () -> {
+                // Don't allow switching prior to startup
+                if (AppOperationMode.isInStartup() || AppOperationMode.isInShutdown()) {
+                    return;
+                }
+
+                if (e.action() != null) {
+                    e.action().run();
+                    return;
+                }
+
+                value.setValue(e);
+            });
+            b.tooltip(e.name());
+
+            var stack = createStyle(e, b);
+            vbox.getChildren().add(stack.createRegion());
+        }
+    }
+
+    private void addUpdateButton(VBox vbox) {
+        var b = new IconButtonComp("mdi2u-update", () -> UpdateAvailableDialog.showIfNeeded(false));
+        b.tooltipKey("updateAvailableTooltip");
+        var stack = createStyle(null, b);
+        stack.hide(Bindings.createBooleanBinding(
+                () -> {
+                    return AppDistributionType.get()
+                                    .getUpdateHandler()
+                                    .getLastUpdateCheckResult()
+                                    .getValue()
+                            == null;
+                },
+                AppDistributionType.get().getUpdateHandler().getLastUpdateCheckResult()));
+        vbox.getChildren().add(stack.createRegion());
+    }
+
+    private void addFiller(VBox vbox) {
+        var filler = new Button();
+        filler.setDisable(true);
+        filler.setMaxHeight(3000);
+        vbox.getChildren().add(filler);
+        VBox.setVgrow(filler, Priority.ALWAYS);
+        vbox.getStyleClass().add("sidebar-comp");
+    }
+
     private Comp<?> createStyle(AppLayoutModel.Entry e, IconButtonComp b) {
         var selected = PseudoClass.getPseudoClass("selected");
 
@@ -131,10 +155,15 @@ public class SideMenuBarComp extends Comp<CompStructure<VBox>> {
             AppFontSizes.lg(struc.get());
             struc.get().setAlignment(Pos.CENTER);
 
-            struc.get().pseudoClassStateChanged(selected, value.getValue().equals(e));
+            struc.get()
+                    .pseudoClassStateChanged(
+                            selected,
+                            e != null
+                                    && value.getValue() != null
+                                    && value.getValue().equals(e));
             value.addListener((c, o, n) -> {
                 PlatformThread.runLaterIfNeeded(() -> {
-                    struc.get().pseudoClassStateChanged(selected, n.equals(e));
+                    struc.get().pseudoClassStateChanged(selected, e != null && n != null && n.equals(e));
                 });
             });
         });
@@ -176,7 +205,9 @@ public class SideMenuBarComp extends Comp<CompStructure<VBox>> {
                     .backgroundProperty()
                     .bind(Bindings.createObjectBinding(
                             () -> {
-                                if (value.getValue().equals(e)) {
+                                if (e != null
+                                        && value.getValue() != null
+                                        && value.getValue().equals(e)) {
                                     return selectedBorder.get();
                                 }
 

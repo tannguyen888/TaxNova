@@ -1,6 +1,7 @@
 package io.abc_def.kickstart_fx.core;
 
 import io.abc_def.kickstart_fx.comp.Comp;
+import io.abc_def.kickstart_fx.login.AuthState;
 import io.abc_def.kickstart_fx.page.*;
 import io.abc_def.kickstart_fx.platform.LabelGraphic;
 import io.abc_def.kickstart_fx.platform.PlatformThread;
@@ -30,7 +31,8 @@ public class AppLayoutModel {
 
     private final SavedState savedState;
 
-    private final List<Entry> entries;
+    private final ObservableList<Entry> entries;
+    private final List<Entry> allEntries;
 
     private final Property<Entry> selected;
 
@@ -40,9 +42,50 @@ public class AppLayoutModel {
 
     public AppLayoutModel(SavedState savedState) {
         this.savedState = savedState;
-        this.entries = createEntryList();
-        this.selected = new SimpleObjectProperty<>(entries.getFirst());
+        this.allEntries = createEntryList();
+        this.entries = FXCollections.observableArrayList();
+        this.selected = new SimpleObjectProperty<>();
         this.queueEntries = FXCollections.observableArrayList();
+
+        // Add all entries initially (will be filtered based on auth state)
+        entries.addAll(allEntries);
+        selected.setValue(entries.getFirst());
+
+        // Setup authentication listener
+        AuthState.authenticatedProperty().addListener((obs, oldVal, newVal) -> {
+            updateEntriesBasedOnAuthState();
+        });
+    }
+
+    private void updateEntriesBasedOnAuthState() {
+        PlatformThread.runLaterIfNeeded(() -> {
+            entries.clear();
+
+            // Always show login page
+            var loginEntry = allEntries.stream()
+                    .filter(e -> e.comp instanceof LoginPageComp)
+                    .findFirst();
+            loginEntry.ifPresent(entries::add);
+
+            // Show other pages only when authenticated
+            if (AuthState.isAuthenticated()) {
+                allEntries.stream()
+                        .filter(e -> !(e.comp instanceof LoginPageComp))
+                        .forEach(entries::add);
+            } else {
+                // Show preferences even when not authenticated
+                var prefsEntry = allEntries.stream()
+                        .filter(e -> e.comp instanceof PrefsPageComp)
+                        .findFirst();
+                prefsEntry.ifPresent(entries::add);
+            }
+
+            // Update selected entry if current selection is not in the new list
+            Entry currentSelected = selected.getValue();
+            if (currentSelected == null || !entries.contains(currentSelected)) {
+                selected.setValue(entries.getFirst());
+            }
+        });
     }
 
     public static AppLayoutModel get() {

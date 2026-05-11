@@ -44,19 +44,19 @@ public class LoginPageComp extends SimpleComp {
 
     private void initializeAuthService() {
         new Thread(() -> {
-            try {
-                DatabaseManager dbManager = new DatabaseManager("");
-                dbManager.connect();
-                UserRepository userRepository = new UserRepository(dbManager);
-                authService = new AuthService(userRepository);
-            } catch (Exception e) {
-                System.out.println("Error initializing auth service: " + e.getMessage());
-                Platform.runLater(() -> {
-                    errorLabel.setText("Lỗi kết nối cơ sở dữ liệu");
-                    errorLabel.setVisible(true);
-                });
-            }
-        })
+                    try {
+                        DatabaseManager dbManager = new DatabaseManager("");
+                        dbManager.connect();
+                        UserRepository userRepository = new UserRepository(dbManager);
+                        authService = new AuthService(userRepository, dbManager);
+                    } catch (Exception e) {
+                        System.out.println("Error initializing auth service: " + e.getMessage());
+                        Platform.runLater(() -> {
+                            errorLabel.setText("Lỗi kết nối cơ sở dữ liệu");
+                            errorLabel.setVisible(true);
+                        });
+                    }
+                })
                 .start();
     }
 
@@ -137,7 +137,7 @@ public class LoginPageComp extends SimpleComp {
                         errorLabel,
                         buttonBox,
                         new Region() // Spacer
-                );
+                        );
 
         // Add forgot password at the bottom
         VBox bottomSection = new VBox();
@@ -164,32 +164,42 @@ public class LoginPageComp extends SimpleComp {
         loginButton.setText("Đang xử lý...");
 
         new Thread(() -> {
-            try {
-                if (authService != null && authService.authenticate(username, password)) {
-                    Platform.runLater(() -> {
-                        AuthState.setAuthenticated(true);
-                        AuthState.setCurrentUsername(username);
-                        System.out.println("✓ Login successful for user: " + username);
-                        errorLabel.setVisible(false);
-                        // Transition to dashboard will be handled by the app
-                    });
-                } else {
-                    Platform.runLater(() -> {
-                        errorLabel.setText("Sai tên đăng nhập hoặc mật khẩu");
-                        errorLabel.setVisible(true);
-                        loginButton.setDisable(false);
-                        loginButton.setText("Đăng Nhập");
-                    });
-                }
-            } catch (Exception e) {
-                Platform.runLater(() -> {
-                    errorLabel.setText("Lỗi đăng nhập: " + e.getMessage());
-                    errorLabel.setVisible(true);
-                    loginButton.setDisable(false);
-                    loginButton.setText("Đăng Nhập");
-                });
-            }
-        })
+                    try {
+                        if (authService != null && authService.authenticate(username, password)) {
+                            Platform.runLater(() -> {
+                                AuthState.setAuthenticated(true);
+                                AuthState.setCurrentUsername(username);
+                                System.out.println("✓ Login successful for user: " + username);
+                                errorLabel.setVisible(false);
+
+                                // Switch to dashboard after successful login
+                                io.abc_def.kickstart_fx.core.AppLayoutModel model =
+                                        io.abc_def.kickstart_fx.core.AppLayoutModel.get();
+                                if (model != null) {
+                                    var dashboardEntry = model.getEntries().stream()
+                                            .filter(e -> e.comp() instanceof DashboardPageComp)
+                                            .findFirst();
+                                    dashboardEntry.ifPresent(
+                                            e -> model.getSelected().setValue(e));
+                                }
+                            });
+                        } else {
+                            Platform.runLater(() -> {
+                                errorLabel.setText("Sai tên đăng nhập hoặc mật khẩu");
+                                errorLabel.setVisible(true);
+                                loginButton.setDisable(false);
+                                loginButton.setText("Đăng Nhập");
+                            });
+                        }
+                    } catch (Exception e) {
+                        Platform.runLater(() -> {
+                            errorLabel.setText("Lỗi đăng nhập: " + e.getMessage());
+                            errorLabel.setVisible(true);
+                            loginButton.setDisable(false);
+                            loginButton.setText("Đăng Nhập");
+                        });
+                    }
+                })
                 .start();
     }
 
@@ -208,29 +218,29 @@ public class LoginPageComp extends SimpleComp {
         registerButton.setText("Đang xử lý...");
 
         new Thread(() -> {
-            try {
-                if (authService != null) {
-                    authService.register(username, password);
-                    Platform.runLater(() -> {
-                        errorLabel.setStyle("-fx-text-fill:#4caf50;");
-                        errorLabel.setText("Đăng ký thành công! Vui lòng đăng nhập");
-                        errorLabel.setVisible(true);
-                        usernameField.clear();
-                        passwordField.clear();
-                        registerButton.setDisable(false);
-                        registerButton.setText(originalText);
-                    });
-                }
-            } catch (Exception e) {
-                Platform.runLater(() -> {
-                    errorLabel.setStyle("-fx-text-fill:#d32f2f;");
-                    errorLabel.setText("Lỗi đăng ký: " + e.getMessage());
-                    errorLabel.setVisible(true);
-                    registerButton.setDisable(false);
-                    registerButton.setText(originalText);
-                });
-            }
-        })
+                    try {
+                        if (authService != null) {
+                            authService.register(username, password);
+                            Platform.runLater(() -> {
+                                errorLabel.setStyle("-fx-text-fill:#4caf50;");
+                                errorLabel.setText("Đăng ký thành công! Vui lòng đăng nhập");
+                                errorLabel.setVisible(true);
+                                usernameField.clear();
+                                passwordField.clear();
+                                registerButton.setDisable(false);
+                                registerButton.setText(originalText);
+                            });
+                        }
+                    } catch (Exception e) {
+                        Platform.runLater(() -> {
+                            errorLabel.setStyle("-fx-text-fill:#d32f2f;");
+                            errorLabel.setText("Lỗi đăng ký: " + e.getMessage());
+                            errorLabel.setVisible(true);
+                            registerButton.setDisable(false);
+                            registerButton.setText(originalText);
+                        });
+                    }
+                })
                 .start();
     }
 

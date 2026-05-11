@@ -1,9 +1,6 @@
 package io.abc_def.kickstart_fx.persistence;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 /**
  * Fallback schema creation when Flyway migration fails
@@ -13,6 +10,7 @@ public class CreateDatabaseSchema {
     private static final String URL = "jdbc:postgresql://localhost:5432/taxService";
     private static final String USER = "postgres";
     private static final String PASSWORD = "lab";
+    private static final String CORRECT_ADMIN_PASSWORD_HASH = "JAvlGPq9JyTdtvBO6x2llnRI1+gxwIyPqCKAn3THIKk=";
 
     public static void createSchema() {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -35,9 +33,9 @@ public class CreateDatabaseSchema {
                     + "    category    VARCHAR(100)     NOT NULL\n"
                     + ");";
 
-            // Insert default admin user
+            // Insert default admin user with correct password hash
             String insertAdmin = "INSERT INTO users (username, password_hash, role)\n"
-                    + "VALUES ('admin', 'admin123', 'ADMIN')\n"
+                    + "VALUES ('admin', '" + CORRECT_ADMIN_PASSWORD_HASH + "', 'ADMIN')\n"
                     + "ON CONFLICT (username) DO NOTHING;";
 
             stmt.execute(createUsersTable);
@@ -45,10 +43,36 @@ public class CreateDatabaseSchema {
             stmt.execute(insertAdmin);
 
             System.out.println("✓ Database schema created successfully!");
+
+            // Update admin password if it's incorrect (from old migration)
+            updateAdminPasswordIfNeeded(conn);
         } catch (SQLException e) {
             if (!e.getMessage().contains("already exists")) {
                 System.out.println("Schema creation note: " + e.getMessage());
             }
+        }
+    }
+
+    private static void updateAdminPasswordIfNeeded(Connection conn) {
+        try {
+            String query = "SELECT password_hash FROM users WHERE username = 'admin'";
+            try (Statement stmt = conn.createStatement();
+                    ResultSet rs = stmt.executeQuery(query)) {
+                if (rs.next()) {
+                    String currentHash = rs.getString("password_hash");
+                    if (!CORRECT_ADMIN_PASSWORD_HASH.equals(currentHash)) {
+                        System.out.println("⚠ Admin password hash mismatch detected. Updating...");
+                        String updateQuery = "UPDATE users SET password_hash = ? WHERE username = 'admin'";
+                        try (PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
+                            updateStmt.setString(1, CORRECT_ADMIN_PASSWORD_HASH);
+                            int rowsUpdated = updateStmt.executeUpdate();
+                            System.out.println("✓ Admin password hash updated: " + rowsUpdated + " row(s)");
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Note while updating admin password: " + e.getMessage());
         }
     }
 }
